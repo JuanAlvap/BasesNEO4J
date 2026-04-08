@@ -1,0 +1,9 @@
+{
+  "name": "neo4j-workspace-launcher",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm --prefix app start",
+    "dev": "npm --prefix app run dev"
+  }
+}

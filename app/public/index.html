@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Gestión - Red Social</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-pattern"></div>
+
+    <main class="app-shell">
+      <header class="header">
+        <div class="header-titles">
+          <h1>Sistema de Gestión - Red Social</h1>
+          <p>Plataforma de moderación de usuarios, posts y comentarios</p>
+        </div>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="usuarios">Usuarios</button>
+        <button class="tab" data-tab="posts">Posts</button>
+        <button class="tab" data-tab="comentarios">Comentarios</button>
+        <button class="tab" data-tab="consultas">Consultas</button>
+      </nav>
+
+      <section id="feedback" class="feedback hidden"></section>
+
+      <section class="panel active" id="panel-usuarios">
+        <div class="panel-header">
+          <h2>Gestión de Usuarios</h2>
+          <div class="menu-container">
+            <button class="btn-menu" id="menu-usuarios">
+              <span>⚙️ CRUD</span>
+            </button>
+            <div id="menu-dropdown-usuarios" class="menu-dropdown hidden">
+              <button class="menu-option" data-action="insert-usuario">➕ Insertar</button>
+              <button class="menu-option" data-action="edit-usuario">✏️ Editar</button>
+              <button class="menu-option" data-action="delete-usuario">🗑️ Eliminar</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-usuarios"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-posts">
+        <div class="panel-header">
+          <h2>Gestión de Posts</h2>
+          <div class="menu-container">
+            <button class="btn-menu" id="menu-posts">
+              <span>⚙️ CRUD</span>
+            </button>
+            <div id="menu-dropdown-posts" class="menu-dropdown hidden">
+              <button class="menu-option" data-action="insert-post">➕ Insertar</button>
+              <button class="menu-option" data-action="edit-post">✏️ Editar</button>
+              <button class="menu-option" data-action="delete-post">🗑️ Eliminar</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Post</th>
+                <th>Contenido</th>
+                <th>ID Autor</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-posts"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-comentarios">
+        <div class="panel-header">
+          <h2>Gestión de Comentarios</h2>
+          <div class="menu-container">
+            <button class="btn-menu" id="menu-comentarios">
+              <span>⚙️ CRUD</span>
+            </button>
+            <div id="menu-dropdown-comentarios" class="menu-dropdown hidden">
+              <button class="menu-option" data-action="insert-comentario">➕ Insertar</button>
+              <button class="menu-option" data-action="edit-comentario">✏️ Editar</button>
+              <button class="menu-option" data-action="delete-comentario">🗑️ Eliminar</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Consec.</th>
+                <th>Post</th>
+                <th>Contenido</th>
+                <th>Reacción</th>
+                <th>Autor</th>
+                <th>Autorizador</th>
+                <th>Fecha Comentario</th>
+                <th>Fecha Autor</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-comentarios"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-consultas">
+        <div class="panel-header">
+          <h2>Consultas</h2>
+        </div>
+
+        <!-- Pestañas de Consultas -->
+        <div class="consultation-tabs">
+          <button class="consultation-tab active" data-consulta="consulta1">📋 Consulta 1: Posts de Usuario</button>
+          <button class="consultation-tab" data-consulta="consulta2">💬 Consulta 2: Comentarios de Post</button>
+        </div>
+
+        <!-- CONSULTA 1: Posts por Usuario -->
+        <div class="consultation-panel active" id="consulta1-panel">
+          <div class="consultation-form">
+            <label>ID Usuario:</label>
+            <input type="number" id="input-consulta1-idu" placeholder="Ingresa el ID del usuario" min="1" />
+            <button id="btn-consulta1" class="btn-primary">Buscar</button>
+          </div>
+          <div id="resultado-consulta1" class="results-container hidden"></div>
+        </div>
+
+        <!-- CONSULTA 2: Comentarios por Post -->
+        <div class="consultation-panel" id="consulta2-panel">
+          <div class="consultation-form">
+            <label>ID Post:</label>
+            <input type="number" id="input-consulta2-idp" placeholder="Ingresa el ID del post" min="1" />
+            <button id="btn-consulta2" class="btn-primary">Buscar</button>
+          </div>
+          <div id="resultado-consulta2" class="results-container hidden"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal de Formulario Dinámico -->
+    <div id="form-modal" class="modal-overlay hidden">
+      <div class="modal-box modal-form">
+        <div class="modal-header">
+          <h3 id="form-modal-title">Formulario</h3>
+          <button id="btn-close-form-modal" class="btn-close-modal" title="Cerrar">✕</button>
+        </div>
+        <div id="dynamic-form"></div>
+        <div class="modal-actions">
+          <button id="btn-cancel-form" class="btn-cancel-modal">Cancelar</button>
+          <button id="btn-submit-form" class="btn-confirm-modal">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminar -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Confirmar Eliminación</h3>
+          <button id="btn-close-confirm-modal" class="btn-close-modal" title="Cerrar">✕</button>
+        </div>
+        <p id="confirm-message">¿Estás seguro de que deseas eliminar este registro?</p>
+        <div class="modal-actions">
+          <button id="btn-cancel-modal" class="btn-cancel-modal">No, cancelar</button>
+          <button id="btn-confirm-modal" class="btn-confirm-modal">Sí, eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
