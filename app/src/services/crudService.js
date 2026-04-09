@@ -29,6 +29,15 @@ function createCrudService(repos) {
       if (!existing) {
         throw new AppError(404, "USUARIO no encontrado.");
       }
+
+      // Validar que el nuevo idu no exista ya (si cambió)
+      if (payload.idu !== idu) {
+        const duplicado = await usuariosRepo.getById(payload.idu);
+        if (duplicado) {
+          throw new AppError(409, `Ya existe USUARIO con idu ${payload.idu}.`);
+        }
+      }
+
       return usuariosRepo.update(idu, payload);
     },
 
@@ -83,6 +92,15 @@ function createCrudService(repos) {
       if (!existing) {
         throw new AppError(404, "POST no encontrado.");
       }
+
+      // Validar que el nuevo autor existe si cambió
+      if (payload.iduAutor !== existing.iduAutor) {
+        const autor = await usuariosRepo.getById(payload.iduAutor);
+        if (!autor) {
+          throw new AppError(400, "El USUARIO autor del post no existe.");
+        }
+      }
+
       return postsRepo.update(idp, payload);
     },
 
@@ -132,6 +150,38 @@ function createCrudService(repos) {
         throw new AppError(404, "COMENTARIO no encontrado.");
       }
 
+      // Validar que el nuevo consec no existe ya (si cambió)
+      if (payload.consec !== consec) {
+        const duplicado = await comentariosRepo.getByConsec(payload.consec);
+        if (duplicado) {
+          throw new AppError(409, `Ya existe COMENTARIO con consec ${payload.consec}.`);
+        }
+      }
+
+      // Validar que el post existe si cambió
+      if (payload.idp !== existing.idp) {
+        const post = await postsRepo.getById(payload.idp);
+        if (!post) {
+          throw new AppError(400, "El POST no existe.");
+        }
+      }
+
+      // Validar que el autor existe si cambió
+      if (payload.iduAutor !== existing.iduAutor) {
+        const autor = await usuariosRepo.getById(payload.iduAutor);
+        if (!autor) {
+          throw new AppError(400, "El USUARIO autor del comentario no existe.");
+        }
+      }
+
+      // Validar que el autorizador existe si cambió y es diferente de null
+      if (payload.iduAutorizador && payload.iduAutorizador !== existing.iduAutorizador) {
+        const autorizador = await usuariosRepo.getById(payload.iduAutorizador);
+        if (!autorizador) {
+          throw new AppError(400, "El USUARIO autorizador del comentario no existe.");
+        }
+      }
+
       return comentariosRepo.update(consec, payload);
     },
 
@@ -158,6 +208,15 @@ function createCrudService(repos) {
       if (!usuario) {
         throw new AppError(404, "USUARIO no encontrado.");
       }
+      
+      // Validar que no sea MANAGER (idu 999) ni ANONIMO
+      if (usuario.idu === 999) {
+        throw new AppError(400, "No se pueden consultar posts del usuario MANAGER.");
+      }
+      if (usuario.nombre && usuario.nombre.toUpperCase().includes("ANONIMO")) {
+        throw new AppError(400, "No se pueden consultar posts de usuarios ANONIMO.");
+      }
+      
       return postsRepo.getByAuthor(idu);
     },
 

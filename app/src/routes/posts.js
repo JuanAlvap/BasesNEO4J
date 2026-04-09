@@ -46,7 +46,9 @@ function createPostsRouter(crudService) {
       const updated = await crudService.updatePost(
         requireInteger(req.params.idp, "idp"),
         {
+          idp: requireInteger(req.body.idp, "idp"),
           contenido: requireString(req.body.contenido, "contenido"),
+          iduAutor: requireInteger(req.body.iduAutor, "iduAutor"),
         }
       );
       res.json(updated);

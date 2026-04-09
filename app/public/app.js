@@ -290,7 +290,7 @@ async function openEditForm(entity, id, id2 = "") {
       dynamicForm.innerHTML = `
         <div class="form-group">
           <label>ID Usuario:</label>
-          <input type="number" id="input-idu" value="${usuario.idu}" disabled />
+          <input type="number" id="input-idu" value="${usuario.idu}" required />
         </div>
         <div class="form-group">
           <label>Nombre:</label>
@@ -302,7 +302,7 @@ async function openEditForm(entity, id, id2 = "") {
       dynamicForm.innerHTML = `
         <div class="form-group">
           <label>ID Post:</label>
-          <input type="number" id="input-idp" value="${post.idp}" disabled />
+          <input type="number" id="input-idp" value="${post.idp}" required />
         </div>
         <div class="form-group">
           <label>Contenido:</label>
@@ -318,7 +318,7 @@ async function openEditForm(entity, id, id2 = "") {
       dynamicForm.innerHTML = `
         <div class="form-group">
           <label>Consecutivo:</label>
-          <input type="number" id="input-consec" value="${comentario.consec}" disabled />
+          <input type="number" id="input-consec" value="${comentario.consec}" required />
         </div>
         <div class="form-group">
           <label>ID Post:</label>
@@ -583,6 +583,7 @@ function wireFormModal() {
         await request(`/api/usuarios/${editId}`, {
           method: "PUT",
           body: JSON.stringify({
+            idu: Number(document.getElementById("input-idu").value),
             nombre: document.getElementById("input-nombre").value.trim(),
           }),
         });
@@ -593,6 +594,7 @@ function wireFormModal() {
         await request(`/api/posts/${editId}`, {
           method: "PUT",
           body: JSON.stringify({
+            idp: Number(document.getElementById("input-idp").value),
             contenido: document.getElementById("input-contenido").value.trim(),
             iduAutor: Number(document.getElementById("input-idu-autor").value),
           }),
@@ -604,6 +606,7 @@ function wireFormModal() {
         await request(`/api/comentarios/${editId}`, {
           method: "PUT",
           body: JSON.stringify({
+            consec: Number(document.getElementById("input-consec").value),
             idp: Number(document.getElementById("input-idp").value),
             contenidoCom: document.getElementById("input-contenido-com").value.trim(),
             likeNotLike: document.getElementById("input-like-not-like").value,

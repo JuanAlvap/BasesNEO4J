@@ -42,10 +42,40 @@ function createNeo4jPostsRepo() {
       const rows = await runWrite(
         `
         MATCH (u:Usuario)-[:publica]->(p:Post {idp: $idp})
-        SET p.contenido = $contenido
+        
+        WITH p, u, $newIduAutor AS newIduAutor
+        
+        // Actualizar propiedades del post
+        SET p.idp = $newIdp, p.contenido = $contenido
+        
+        // Si el autor cambió, actualizar la relación
+        WITH p, u, newIduAutor
+        WHERE u.idu <> newIduAutor
+        
+        MATCH (newUsuario:Usuario {idu: newIduAutor})
+        MATCH (u)-[relPublica:publica]->(p)
+        DELETE relPublica
+        CREATE (newUsuario)-[:publica]->(p)
+        
+        RETURN p.idp AS idp, p.contenido AS contenido, newUsuario.idu AS iduAutor
+        
+        UNION
+        
+        MATCH (u:Usuario)-[:publica]->(p:Post {idp: $idp})
+        
+        SET p.idp = $newIdp, p.contenido = $contenido
+        
+        WITH p, u, $newIduAutor AS newIduAutor
+        WHERE u.idu = newIduAutor
+        
         RETURN p.idp AS idp, p.contenido AS contenido, u.idu AS iduAutor
         `,
-        { idp, contenido: payload.contenido }
+        { 
+          idp, 
+          newIdp: payload.idp, 
+          contenido: payload.contenido,
+          newIduAutor: payload.iduAutor
+        }
       );
       return rows[0] || null;
     },

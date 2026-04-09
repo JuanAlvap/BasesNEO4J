@@ -54,6 +54,7 @@ function createComentariosRouter(crudService) {
       const updated = await crudService.updateComentario(
         requireInteger(req.params.consec, "consec"),
         {
+          consec: requireInteger(req.body.consec, "consec"),
           idp: requireInteger(req.body.idp, "idp"),
           fechorCom: requireIsoDate(req.body.fechorCom, "fechorCom"),
           contenidoCom: requireString(req.body.contenidoCom, "contenidoCom"),

@@ -45,7 +45,8 @@ function createUsuariosRouter(crudService) {
       const updated = await crudService.updateUsuario(
         requireInteger(req.params.idu, "idu"),
         {
-        nombre: requireString(req.body.nombre, "nombre"),
+          idu: requireInteger(req.body.idu, "idu"),
+          nombre: requireString(req.body.nombre, "nombre"),
         }
       );
       res.json(updated);

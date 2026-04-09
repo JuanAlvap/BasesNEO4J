@@ -39,10 +39,30 @@ function createNeo4jUsuariosRepo() {
       const rows = await runWrite(
         `
         MATCH (u:Usuario {idu: $idu})
-        SET u.nombre = $nombre
+        
+        // Actualizar el usuario
+        SET u.idu = $newIdu, u.nombre = $nombre
+        
+        // Actualizar todos los posts creados por este usuario
+        WITH u
+        MATCH (u)-[:publica]->(p:Post)
+        SET p.iduAutor = $newIdu
+        
+        // Actualizar todos los comentarios hechos por este usuario
+        WITH u
+        MATCH (u)-[:hace]->(c:Comentario)
+        SET c.iduAutor = $newIdu
+        
+        // Actualizar todos los comentarios autorizados por este usuario
+        WITH u
+        MATCH (u)-[:autoriza]->(c:Comentario)
+        SET c.iduAutorizador = $newIdu
+        
+        // Retornar el usuario actualizado
+        WITH u
         RETURN u.idu AS idu, u.nombre AS nombre
         `,
-        { idu, nombre: payload.nombre }
+        { idu, newIdu: payload.idu, nombre: payload.nombre }
       );
       return rows[0] || null;
     },

@@ -102,8 +102,8 @@ function createNeo4jComentariosRepo() {
         MATCH (ua:Usuario {idu: $iduAutor})
         MATCH (uz:Usuario {idu: $iduAutorizador})
         
-        // Update comentario properties
-        SET c.idp = $idp,
+        // Update comentario properties (solo las que existen en el nodo)
+        SET c.consec = $newConsec,
             c.fechorCom = datetime($fechorCom),
             c.contenidoCom = $contenidoCom,
             c.fechorAut = datetime($fechorAut),
@@ -142,6 +142,7 @@ function createNeo4jComentariosRepo() {
         `,
         {
           consec: Number(consec),
+          newConsec: Number(payload.consec),
           idp: payload.idp,
           fechorCom: payload.fechorCom,
           contenidoCom: payload.contenidoCom,
@@ -182,6 +183,19 @@ function createNeo4jComentariosRepo() {
         MATCH (u:Usuario {idu: $idu})
         OPTIONAL MATCH (u)-[:hace]->(c:Comentario)
         RETURN count(c) > 0 AS hasComentarios
+        `,
+        { idu }
+      );
+      return Boolean(rows[0] && rows[0].hasComentarios);
+    },
+
+    async existsByAuthorOrAuthorizer(idu) {
+      const rows = await runRead(
+        `
+        MATCH (u:Usuario {idu: $idu})
+        OPTIONAL MATCH (u)-[:hace]->(c:Comentario)
+        OPTIONAL MATCH (u)-[:autoriza]->(c2:Comentario)
+        RETURN count(c) > 0 OR count(c2) > 0 AS hasComentarios
         `,
         { idu }
       );
