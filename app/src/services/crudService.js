@@ -125,13 +125,11 @@ function createCrudService(repos) {
         throw new AppError(400, "El USUARIO autor del comentario no existe.");
       }
 
-      const existing = comentariosRepo.getByConsec
-        ? await comentariosRepo.getByConsec(payload.consec)
-        : await comentariosRepo.getById(payload.idp, payload.consec);
+      const existing = await comentariosRepo.getById(payload.idp, payload.consec);
       if (existing) {
         throw new AppError(
           409,
-          `Ya existe COMENTARIO con consec ${payload.consec}.`
+          `Ya existe COMENTARIO con idp ${payload.idp} y consec ${payload.consec}.`
         );
       }
 
@@ -144,17 +142,20 @@ function createCrudService(repos) {
 
 
 
-    async updateComentario(consec, payload) {
-      const existing = await comentariosRepo.getByConsec(consec);
+    async updateComentario(idp, consec, payload) {
+      const existing = await comentariosRepo.getById(idp, consec);
       if (!existing) {
         throw new AppError(404, "COMENTARIO no encontrado.");
       }
 
-      // Validar que el nuevo consec no existe ya (si cambió)
-      if (payload.consec !== consec) {
-        const duplicado = await comentariosRepo.getByConsec(payload.consec);
+      // Validar que la nueva combinación no existe ya (si cambió)
+      if (payload.idp !== idp || payload.consec !== consec) {
+        const duplicado = await comentariosRepo.getById(payload.idp, payload.consec);
         if (duplicado) {
-          throw new AppError(409, `Ya existe COMENTARIO con consec ${payload.consec}.`);
+          throw new AppError(
+            409,
+            `Ya existe COMENTARIO con idp ${payload.idp} y consec ${payload.consec}.`
+          );
         }
       }
 
@@ -182,17 +183,25 @@ function createCrudService(repos) {
         }
       }
 
-      return comentariosRepo.update(consec, payload);
+      return comentariosRepo.update(idp, consec, payload);
     },
 
-    async deleteComentario(consec) {
-      const existing = await comentariosRepo.getByConsec(consec);
+    async deleteComentario(idp, consec) {
+      const existing = await comentariosRepo.getById(idp, consec);
       if (!existing) {
         throw new AppError(404, "COMENTARIO no encontrado.");
       }
 
-      await comentariosRepo.remove(consec);
+      await comentariosRepo.remove(idp, consec);
       return { deleted: true };
+    },
+
+    async getComentarioById(idp, consec) {
+      const comentario = await comentariosRepo.getById(idp, consec);
+      if (!comentario) {
+        throw new AppError(404, "COMENTARIO no encontrado.");
+      }
+      return comentario;
     },
 
     async getComentarioByConsec(consec) {

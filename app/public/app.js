@@ -246,12 +246,24 @@ async function openInsertForm(entity) {
 
 async function openEditIdPrompt(entity) {
   const dynamicForm = document.getElementById("dynamic-form");
-  dynamicForm.innerHTML = `
-    <div class="form-group">
-      <label>${entity === "usuario" ? "ID Usuario:" : entity === "post" ? "ID Post:" : "Consecutivo:"}</label>
-      <input type="number" id="input-lookup-id" placeholder="${entity === "comentario" ? "Ingresa el consecutivo" : "Ingresa el ID"}" min="1" required autofocus />
-    </div>
-  `;
+  const isComentario = entity === "comentario";
+  dynamicForm.innerHTML = isComentario
+    ? `
+      <div class="form-group">
+        <label>ID Post:</label>
+        <input type="number" id="input-lookup-id" placeholder="Ingresa el ID del post" min="1" required autofocus />
+      </div>
+      <div class="form-group">
+        <label>Consecutivo:</label>
+        <input type="number" id="input-lookup-consec" placeholder="Ingresa el consecutivo" min="1" required />
+      </div>
+    `
+    : `
+      <div class="form-group">
+        <label>${entity === "usuario" ? "ID Usuario:" : "ID Post:"}</label>
+        <input type="number" id="input-lookup-id" placeholder="Ingresa el ID" min="1" required autofocus />
+      </div>
+    `;
   
   document.getElementById("form-modal-title").textContent = `Editar ${entity === "usuario" ? "Usuario" : entity === "post" ? "Post" : "Comentario"}`;
   document.getElementById("btn-submit-form").textContent = "Continuar";
@@ -264,12 +276,24 @@ async function openEditIdPrompt(entity) {
 
 async function openDeleteIdPrompt(entity) {
   const dynamicForm = document.getElementById("dynamic-form");
-  dynamicForm.innerHTML = `
-    <div class="form-group">
-      <label>${entity === "usuario" ? "ID Usuario:" : entity === "post" ? "ID Post:" : "Consecutivo:"}</label>
-      <input type="number" id="input-lookup-id" placeholder="${entity === "comentario" ? "Ingresa el consecutivo" : "Ingresa el ID"}" min="1" required autofocus />
-    </div>
-  `;
+  const isComentario = entity === "comentario";
+  dynamicForm.innerHTML = isComentario
+    ? `
+      <div class="form-group">
+        <label>ID Post:</label>
+        <input type="number" id="input-lookup-id" placeholder="Ingresa el ID del post" min="1" required autofocus />
+      </div>
+      <div class="form-group">
+        <label>Consecutivo:</label>
+        <input type="number" id="input-lookup-consec" placeholder="Ingresa el consecutivo" min="1" required />
+      </div>
+    `
+    : `
+      <div class="form-group">
+        <label>${entity === "usuario" ? "ID Usuario:" : "ID Post:"}</label>
+        <input type="number" id="input-lookup-id" placeholder="Ingresa el ID" min="1" required autofocus />
+      </div>
+    `;
   
   document.getElementById("form-modal-title").textContent = `Eliminar ${entity === "usuario" ? "Usuario" : entity === "post" ? "Post" : "Comentario"}`;
   document.getElementById("btn-submit-form").textContent = "Continuar";
@@ -314,7 +338,10 @@ async function openEditForm(entity, id, id2 = "") {
         </div>
       `;
     } else if (entity === "comentario") {
-      const comentario = await request(`/api/comentarios/${id}`);
+      const comentario = await request(`/api/comentarios/${id}/${id2}`);
+      if (!comentario) {
+        throw new Error("COMENTARIO no encontrado.");
+      }
       dynamicForm.innerHTML = `
         <div class="form-group">
           <label>Consecutivo:</label>
@@ -391,7 +418,10 @@ async function openDeletePrompt(entity, id, id2 = "") {
         </div>
       `;
     } else if (entity === "comentario") {
-      data = await request(`/api/comentarios/${id}`);
+      data = await request(`/api/comentarios/${id}/${id2}`);
+      if (!data) {
+        throw new Error("COMENTARIO no encontrado.");
+      }
       dynamicForm.innerHTML = `
         <div style="text-align: center; margin-bottom: 20px;">
           <p style="font-size: 1.1rem; margin-bottom: 10px;"><strong>Consecutivo:</strong> ${data.consec} | <strong>Post:</strong> ${data.idp}</p>
@@ -489,11 +519,16 @@ function wireFormModal() {
         await openEditForm("post", id);
       } else if (action === "edit-lookup-comentario") {
         const id = Number(document.getElementById("input-lookup-id").value);
+        const id2 = Number(document.getElementById("input-lookup-consec").value);
         if (!id || id <= 0) {
+          showFeedback("error", "Por favor ingresa un ID de post válido");
+          return;
+        }
+        if (!id2 || id2 <= 0) {
           showFeedback("error", "Por favor ingresa un consecutivo válido");
           return;
         }
-        await openEditForm("comentario", id);
+        await openEditForm("comentario", id, id2);
       }
       // ---- Acciones de búsqueda de ID para eliminar ----
       else if (action === "delete-lookup-usuario") {
@@ -512,11 +547,16 @@ function wireFormModal() {
         await openDeletePrompt("post", id);
       } else if (action === "delete-lookup-comentario") {
         const id = Number(document.getElementById("input-lookup-id").value);
+        const id2 = Number(document.getElementById("input-lookup-consec").value);
         if (!id || id <= 0) {
+          showFeedback("error", "Por favor ingresa un ID de post válido");
+          return;
+        }
+        if (!id2 || id2 <= 0) {
           showFeedback("error", "Por favor ingresa un consecutivo válido");
           return;
         }
-        await openDeletePrompt("comentario", id);
+        await openDeletePrompt("comentario", id, id2);
       }
       // ---- Acciones de confirmación de eliminación ----
       else if (action === "confirm-delete-usuario") {
@@ -531,7 +571,7 @@ function wireFormModal() {
         closeFormModal();
         await refreshAllTables();
       } else if (action === "confirm-delete-comentario") {
-        await request(`/api/comentarios/${editId}`, { method: "DELETE" });
+        await request(`/api/comentarios/${editId}/${editId2}`, { method: "DELETE" });
         showFeedback("ok", "Comentario eliminado");
         closeFormModal();
         await refreshAllTables();
@@ -603,7 +643,7 @@ function wireFormModal() {
         closeFormModal();
         await refreshAllTables();
       } else if (action === "edit-comentario") {
-        await request(`/api/comentarios/${editId}`, {
+        await request(`/api/comentarios/${editId}/${editId2}`, {
           method: "PUT",
           body: JSON.stringify({
             consec: Number(document.getElementById("input-consec").value),

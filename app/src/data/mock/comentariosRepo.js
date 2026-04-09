@@ -11,6 +11,7 @@ function createMockComentariosRepo() {
         fechorAut: payload.fechorAut,
         likeNotLike: payload.likeNotLike,
         iduAutor: payload.iduAutor,
+        iduAutorizador: payload.iduAutorizador,
       };
       store.comentarios.push(comentario);
       return comentario;
@@ -34,9 +35,9 @@ function createMockComentariosRepo() {
       );
     },
 
-    async update(consec, payload) {
+    async update(idp, consec, payload) {
       const idx = store.comentarios.findIndex(
-        (c) => Number(c.consec) === Number(consec)
+        (c) => Number(c.idp) === Number(idp) && Number(c.consec) === Number(consec)
       );
 
       if (idx === -1) {
@@ -47,9 +48,9 @@ function createMockComentariosRepo() {
       return store.comentarios[idx];
     },
 
-    async remove(consec) {
+    async remove(idp, consec) {
       const idx = store.comentarios.findIndex(
-        (c) => Number(c.consec) === Number(consec)
+        (c) => Number(c.idp) === Number(idp) && Number(c.consec) === Number(consec)
       );
       if (idx !== -1) {
         store.comentarios.splice(idx, 1);

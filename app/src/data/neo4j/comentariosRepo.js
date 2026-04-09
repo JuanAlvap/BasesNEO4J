@@ -94,11 +94,11 @@ function createNeo4jComentariosRepo() {
       return rows[0] || null;
     },
 
-    async update(consec, payload) {
+    async update(idp, consec, payload) {
       const rows = await runWrite(
         `
-        MATCH (c:Comentario {consec: $consec})
-        MATCH (p:Post {idp: $idp})
+        MATCH (oldPost:Post {idp: $oldIdp})-[:tiene]->(c:Comentario {consec: $oldConsec})
+        MATCH (newPost:Post {idp: $newIdp})
         MATCH (ua:Usuario {idu: $iduAutor})
         MATCH (uz:Usuario {idu: $iduAutorizador})
         
@@ -110,10 +110,10 @@ function createNeo4jComentariosRepo() {
             c.likeNotLike = $likeNotLike
         
         // Update relationships if post changed
-        WITH c, p, ua, uz
-        OPTIONAL MATCH (oldPost:Post)-[rel:tiene]->(c)
+        WITH c, oldPost, newPost, ua, uz
+        OPTIONAL MATCH (oldPost)-[rel:tiene]->(c)
         DELETE rel
-        CREATE (p)-[:tiene]->(c)
+        CREATE (newPost)-[:tiene]->(c)
         
         // Update author relationships
         WITH c, ua, uz
@@ -141,9 +141,10 @@ function createNeo4jComentariosRepo() {
                uz.idu AS iduAutorizador
         `,
         {
-          consec: Number(consec),
+          oldIdp: Number(idp),
+          oldConsec: Number(consec),
+          newIdp: Number(payload.idp),
           newConsec: Number(payload.consec),
-          idp: payload.idp,
           fechorCom: payload.fechorCom,
           contenidoCom: payload.contenidoCom,
           fechorAut: payload.fechorAut,
@@ -155,13 +156,13 @@ function createNeo4jComentariosRepo() {
       return rows[0] || null;
     },
 
-    async remove(consec) {
+    async remove(idp, consec) {
       await runWrite(
         `
-        MATCH (c:Comentario {consec: $consec})
+        MATCH (p:Post {idp: $idp})-[:tiene]->(c:Comentario {consec: $consec})
         DETACH DELETE c
         `,
-        { consec: Number(consec) }
+        { idp: Number(idp), consec: Number(consec) }
       );
       return true;
     },

@@ -18,6 +18,18 @@ function createComentariosRouter(crudService) {
     }
   });
 
+  router.get("/:idp/:consec", async (req, res, next) => {
+    try {
+      const data = await crudService.getComentarioById(
+        requireInteger(req.params.idp, "idp"),
+        requireInteger(req.params.consec, "consec")
+      );
+      res.json(data);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get("/:consec", async (req, res, next) => {
     try {
       const data = await crudService.getComentarioByConsec(
@@ -49,9 +61,10 @@ function createComentariosRouter(crudService) {
     }
   });
 
-  router.put("/:consec", async (req, res, next) => {
+  router.put("/:idp/:consec", async (req, res, next) => {
     try {
       const updated = await crudService.updateComentario(
+        requireInteger(req.params.idp, "idp"),
         requireInteger(req.params.consec, "consec"),
         {
           consec: requireInteger(req.body.consec, "consec"),
@@ -70,9 +83,10 @@ function createComentariosRouter(crudService) {
     }
   });
 
-  router.delete("/:consec", async (req, res, next) => {
+  router.delete("/:idp/:consec", async (req, res, next) => {
     try {
       const result = await crudService.deleteComentario(
+        requireInteger(req.params.idp, "idp"),
         requireInteger(req.params.consec, "consec")
       );
       res.json(result);
